@@ -47,6 +47,6 @@ for link in "${links[@]}"; do
   if echo "$link" | grep -v -q "$PYENV_ROOT"; then
     [[ "$target" =~ $regex ]]
     version="${BASH_REMATCH[1]}"
-    echo $version:${link%"/bin/python"}
+    echo "$version":"${link%/bin/python}"
   fi
 done | sort | $output
