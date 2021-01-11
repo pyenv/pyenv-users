@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+#
+# Summary: Find virtual environments that use pyenv-managed versions.
+#
+# Usage: pyenv users [directory]
+#
+# Scans [directory] for virtual environments whose `python` commands
+# are symlinks back into a pyenv version. Default: current directory.
+#
+# I'm not a script writer so it's probably a bit crude, but I find it
+# helpful for checking if I can uninstall old Python versions. Uses
+# the `column` command from the util-linux package (if available) for
+# pretty-printing the output.
+
+if [ -n "$1" ]; then
+  DIR="$1"
+else
+  DIR="$PYENV_DIR"
+fi
+
+cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
+unset links i
+while IFS= read -r -d $'\0' file; do
+  links[i++]="$file"
+done < <(find "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
+
+# Exit if no venvs are using a pyenv-managed Python installation
+if [[ $i -eq 0 ]]; then
+  exit 0
+fi
+
+# Use columnar output if convenient.
+if [ -n "$(command -v column)" ]; then
+  output="column -t -s ':'"
+else
+  output="cat"
+fi
+
+# Regex to extract the pyenv version from the target string. The
+# second group consumes the actual binary (`python`, `pypy3`, etc)
+regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
+
+for link in "${links[@]}"; do
+  # `$link` is the `python` symlink, and `$target` is its target.
+  target=$(readlink -f "$link")
+  # Ignore symlinks inside $PYENV_ROOT itself
+  if echo "$link" | grep -v -q "$PYENV_ROOT"; then
+    [[ "$target" =~ $regex ]]
+    version="${BASH_REMATCH[1]}"
+    echo $version:${link%"/bin/python"}
+  fi
+done | sort | $output
