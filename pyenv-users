@@ -22,7 +22,7 @@ cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
 unset links i
 while IFS= read -r -d $'\0' file; do
   links[i++]="$file"
-done < <(find "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
+done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
 
 # Exit if no relevant venvs were found
 if [[ $i -eq 0 ]]; then
