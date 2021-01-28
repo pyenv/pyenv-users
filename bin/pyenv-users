@@ -6,11 +6,6 @@
 #
 # Scans [directory] for virtual environments whose `python` commands
 # are symlinks back into a pyenv version. Default: current directory.
-#
-# I'm not a script writer so it's probably a bit crude, but I find it
-# helpful for checking if I can uninstall old Python versions. Uses
-# the `column` command from the util-linux package (if available) for
-# pretty-printing the output.
 
 if [ -n "$1" ]; then
   DIR="$1"
