@@ -24,17 +24,9 @@ Prerequisites
 Installation
 ------------
 
-Verify that ``$PYENV_ROOT`` has been configured:
-
 .. code-block:: bash
 
-   $ echo $PYENV_ROOT
-
-Install the plugin:
-
-.. code-block:: bash
-
-   $ git clone https://github.com/pyenv/pyenv-users.git "$PYENV_ROOT"/plugins/pyenv-users
+   $ git clone https://github.com/pyenv/pyenv-users.git "$(pyenv root)/plugins/pyenv-users"
 
 
 Usage

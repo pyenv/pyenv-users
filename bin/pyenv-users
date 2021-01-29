@@ -122,7 +122,6 @@ fi
 # and `venvs` are venv pathnames. Using parallel arrays since arrays-of-arrays
 # are a pain in bash. Keeping versions and venvs separate avoids needing awk.
 declare -a links versions venvs
-
 collect_links "$DIR" links
 collect_pairs links versions venvs
 print_pairs versions venvs
