@@ -113,6 +113,9 @@ if [[ "${#ARGUMENTS[@]}" == 0 ]]; then
   DIR="$PYENV_DIR"
 elif [[ "${#ARGUMENTS[@]}" == 1 ]]; then
   DIR="${ARGUMENTS[0]}"
+else
+  pyenv help users
+  exit 1
 fi
 
 # The `links` are the symlink pathnames, `versions` are pyenv version strings,
