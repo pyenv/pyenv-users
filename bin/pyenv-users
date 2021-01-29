@@ -37,11 +37,14 @@ regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
 
 for link in "${links[@]}"; do
   # `$link` is the `python` symlink, and `$target` is its target.
+  linkpath=$(realpath -s "$link")
   target=$(readlink -f "$link")
-  # Ignore symlinks inside $PYENV_ROOT itself
-  if realpath -s "$link" | grep -v -q "$PYENV_ROOT"; then
-    [[ "$target" =~ $regex ]]
-    version="${BASH_REMATCH[1]}"
+  [[ "$target" =~ $regex ]]
+  version="${BASH_REMATCH[1]}"
+  # Only capture links outside PYENV_ROOT or inside pyenv-virtualenv venvs
+  if grep -v -q "$PYENV_ROOT" <<< "$linkpath" || \
+     grep -q "$PYENV_ROOT/versions/$version/envs" <<< "$linkpath"
+  then
     echo "$version":"${link%/bin/python}"
   fi
 done | sort | $output
