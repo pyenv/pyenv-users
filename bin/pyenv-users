@@ -124,11 +124,5 @@ fi
 declare -a links versions venvs
 
 collect_links "$DIR" links
-
-# Exit if no relevant venvs were found
-if [ ${#links[@]} -eq 0 ]; then
-  exit 0
-fi
-
 collect_pairs links versions venvs
 print_pairs versions venvs
