@@ -34,7 +34,7 @@ Install the plugin:
 
 .. code-block:: bash
 
-   $ git clone https://github.com/pfheatwole/pyenv-users.git "$PYENV_ROOT"/plugins/pyenv-users
+   $ git clone https://github.com/pyenv/pyenv-users.git "$PYENV_ROOT"/plugins/pyenv-users
 
 
 Usage
