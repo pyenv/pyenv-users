@@ -11,62 +11,6 @@
 
 set -e
 
-function collect_links () {
-  # Collect all symlinks named python that point into $PYENV_ROOT
-  DIR="$1"
-  local -n _links=$2
-  cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
-  unset i
-  while IFS= read -r -d $'\0' file; do
-    _links[i++]="$file"
-  done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
-}
-
-function collect_pairs () {
-  # Turn each link into a (version, venv) string pair
-  local -n _links=$1 _versions=$2 _venvs=$3
-
-  # Regex to extract the pyenv version from the target string. The
-  # second group consumes the actual binary (`python`, `pypy3`, etc)
-  regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
-
-  unset i
-  for link in "${_links[@]}"; do
-    # `$link` is the `python` symlink, and `$target` is its target.
-    linkpath=$(realpath -s "$link")
-    target=$(readlink -f "$link")
-    [[ "$target" =~ $regex ]]
-    version="${BASH_REMATCH[1]}"
-    # Only capture links outside PYENV_ROOT or inside pyenv-virtualenv venvs
-    if grep -v -q "$PYENV_ROOT" <<< "$linkpath" || \
-       grep -q "$PYENV_ROOT/versions/$version/envs" <<< "$linkpath"
-    then
-      _versions[i]="$version"
-      _venvs[i++]="${link%/bin/python}"
-    fi
-  done
-}
-
-function print_pairs () {
-  # Print each (version, venv) pair
-  local -n _versions=$1 _venvs=$2
-  local -i K=${#_versions[@]} width=0 maxwidth=0
-
-  # Use the longest $version to setup the columns
-  for (( k=0; k < K; k++ )); do
-    width=${#_versions[k]}
-    if (( width > maxwidth )); then maxwidth=$width; fi
-  done
-
-  for (( k=0; k < K; k++ )); do
-    if [ -z "$RAW" ]; then
-      printf "%-*s  %s\n" "$maxwidth" "${_versions[$k]}" "${_venvs[k]}"
-    else
-      echo "${_versions[$k]}":"${_venvs[$k]}"
-    fi
-  done | sort
-}
-
 parse_options() {
   # Parse the command line options. Taken from `pyenv-virtualenv`
   OPTIONS=()
@@ -91,10 +35,6 @@ parse_options() {
   done
 }
 
-if [ -z "$PYENV_ROOT" ]; then
-  PYENV_ROOT=$(pyenv root)
-fi
-
 unset RAW
 parse_options "$@"
 for option in "${OPTIONS[@]}"; do
@@ -114,14 +54,57 @@ if [[ "${#ARGUMENTS[@]}" == 0 ]]; then
 elif [[ "${#ARGUMENTS[@]}" == 1 ]]; then
   DIR="${ARGUMENTS[0]}"
 else
+  echo -e "\nToo many directory arguments.\n"
   pyenv help users
   exit 1
 fi
+
+# ----------------------------------------------------------------------------
+# Finished parsing the arguments. Begin the actual functionality.
 
 # The `links` are the symlink pathnames, `versions` are pyenv version strings,
 # and `venvs` are venv pathnames. Using parallel arrays since arrays-of-arrays
 # are a pain in bash. Keeping versions and venvs separate avoids needing awk.
 declare -a links versions venvs
-collect_links "$DIR" links
-collect_pairs links versions venvs
-print_pairs versions venvs
+
+if [ -z "$PYENV_ROOT" ]; then
+  PYENV_ROOT=$(pyenv root)
+fi
+
+# Collect all symlinks named `python` that point into $PYENV_ROOT
+cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
+unset i
+while IFS= read -r -d $'\0' file; do
+  links[i++]="$file"
+done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
+
+# Turn each link into a (version, venv) string pair
+regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
+unset i
+for link in "${links[@]}"; do
+  linkpath=$(realpath -s "$link")
+  target=$(readlink -f "$link")
+  [[ "$target" =~ $regex ]]
+  version="${BASH_REMATCH[1]}"
+  # Only capture links outside PYENV_ROOT or inside pyenv-virtualenv venvs
+  if grep -v -q "$PYENV_ROOT" <<< "$linkpath" || \
+     grep -q "$PYENV_ROOT/versions/$version/envs" <<< "$linkpath"
+  then
+    versions[i]="$version"
+    venvs[i++]="${link%/bin/python}"
+  fi
+done
+
+# Print each (version, venv) pair
+declare -i K=${#versions[@]} width=0 maxwidth=0
+for (( k=0; k < K; k++ )); do
+  width=${#versions[k]}
+  if (( width > maxwidth )); then maxwidth=$width; fi
+done
+for (( k=0; k < K; k++ )); do
+  if [ -z "$RAW" ]; then
+    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]}"
+  else
+    echo "${versions[$k]}":"${venvs[$k]}"
+  fi
+done | sort

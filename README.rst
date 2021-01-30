@@ -14,8 +14,6 @@ virtual environments, regardless of how they were created (``python -m venv
 Prerequisites
 -------------
 
-* BASH >= 4.3 (for ``nameref`` parameters)
-
 * GNU coreutils (for ``readlink`` and ``realpath``)
 
 * GNU findutils (for ``find``)
