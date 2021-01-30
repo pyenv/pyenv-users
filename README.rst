@@ -62,6 +62,28 @@ For example, to get a list of all versions linked to a virtual environment:
    3.8.6
    pypy3.6-7.3.1
 
+The list of linked versions can be combined with the list of all installed
+versions to show which installations are not linked to any environment in the
+specified directory:
+
+.. code-block:: bash
+
+   $ pyenv versions
+   * system (set by /home/peter/.local/pyenv/version)
+     3.6.10
+     3.7.5
+     3.7.9
+     3.8.6
+     3.9.1
+     pypy3.6-7.3.0
+     pypy3.6-7.3.1
+
+   $ comm -3 <(pyenv users --raw ~ | cut -d: -f1 | uniq) <(pyenv versions | tail -n+2 | tr -d "[:blank:]") | tr -d "[:blank:]"
+   3.6.10
+   3.7.5
+   3.9.1
+   pypy3.6-7.3.0
+
 
 Disclaimer
 ----------
