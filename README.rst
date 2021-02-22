@@ -37,17 +37,17 @@ search your home directory:
 .. code-block:: bash
 
    $ pyenv users ~
-   3.7.9          /home/peter/.cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.7
-   3.7.9          /home/peter/work/venvs/long name with spaces
-   3.8.6          /home/peter/.cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.8
-   pypy3.6-7.3.1  /home/peter/work/venvs/example1
+   3.7.9          .cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.7
+   3.7.9          work/venvs/long name with spaces
+   3.8.6          .cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.8
+   pypy3.6-7.3.1  work/venvs/example1
 
 For scripting, use the ``--raw`` option to output a list of ``:`` separated
-items:
+items. The ``--absolute-paths`` option may also be useful in this case:
 
 .. code-block:: bash
 
-   $ pyenv users --raw ~
+   $ pyenv users --raw --absolute-paths ~
    3.7.9:/home/peter/.cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.7
    3.7.9:/home/peter/work/venvs/long name with spaces
    3.8.6:/home/peter/.cache/pypoetry/virtualenvs/my_project-KM_3YcvM-py3.8
@@ -68,17 +68,16 @@ specified directory:
 
 .. code-block:: bash
 
-   $ pyenv versions
-   * system (set by /home/peter/.local/pyenv/version)
-     3.6.10
-     3.7.5
-     3.7.9
-     3.8.6
-     3.9.1
-     pypy3.6-7.3.0
-     pypy3.6-7.3.1
+   $ pyenv versions --bare
+   3.6.10
+   3.7.5
+   3.7.9
+   3.8.6
+   3.9.1
+   pypy3.6-7.3.0
+   pypy3.6-7.3.1
 
-   $ comm -3 <(pyenv users --raw ~ | cut -d: -f1 | uniq) <(pyenv versions | tail -n+2 | tr -d "[:blank:]") | tr -d "[:blank:]"
+   $ comm -3 <(pyenv users --raw ~ | cut -d: -f1 | uniq) <(pyenv versions --bare) | tr -d "[:blank:]"
    3.6.10
    3.7.5
    3.9.1

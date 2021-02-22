@@ -4,7 +4,8 @@
 #
 # Usage: pyenv users [-r|--raw] [directory]
 #
-#   -r/--raw   Raw output strings as "<version>:<venv-path>"
+#   -A/--absolute-paths  Output absolute paths instead of relative paths
+#   -r/--raw             Raw output strings as "<version>:<venv-path>"
 #
 # Scans [directory] for virtual environments whose `python` commands
 # are symlinks back into a pyenv version. Default: current directory.
@@ -35,16 +36,23 @@ parse_options() {
   done
 }
 
-unset RAW
+unset ABSOLUTE RAW
 parse_options "$@"
 for option in "${OPTIONS[@]}"; do
   case "$option" in
+  "A" | "absolute-paths" )
+    ABSOLUTE=1
+    ;;
   "r" | "raw" )
-    RAW=true
+    RAW=1
     ;;
   "h" | "help" )
     pyenv help users
     exit 0
+    ;;
+  * )
+    echo "pyenv-users: unrecognized option '$option'"
+    exit 1
     ;;
   esac
 done
@@ -54,10 +62,15 @@ if [[ "${#ARGUMENTS[@]}" == 0 ]]; then
 elif [[ "${#ARGUMENTS[@]}" == 1 ]]; then
   DIR="${ARGUMENTS[0]}"
 else
-  echo -e "\nToo many directory arguments.\n"
-  pyenv help users
+  echo "pyenv-users: too many directory arguments"
   exit 1
 fi
+if [ -n "$ABSOLUTE" ]; then
+  PREFIX=""
+else
+  PREFIX="$DIR/"
+fi
+
 
 # ----------------------------------------------------------------------------
 # Finished parsing the arguments. Begin the actual functionality.
@@ -73,14 +86,12 @@ fi
 
 # Collect all symlinks named `python` that point into $PYENV_ROOT
 cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
-unset i
 while IFS= read -r -d $'\0' file; do
-  links[i++]="$file"
+  links+=("$file")
 done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
 
 # Turn each link into a (version, venv) string pair
 regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
-unset i
 for link in "${links[@]}"; do
   linkpath=$(realpath -s "$link")
   target=$(readlink -f "$link")
@@ -90,8 +101,8 @@ for link in "${links[@]}"; do
   if grep -v -q "$PYENV_ROOT" <<< "$linkpath" || \
      grep -q "$PYENV_ROOT/versions/$version/envs" <<< "$linkpath"
   then
-    versions[i]="$version"
-    venvs[i++]="${link%/bin/python}"
+    versions+=("$version")
+    venvs+=("${link%/bin/python}")
   fi
 done
 
@@ -102,9 +113,9 @@ for (( k=0; k < K; k++ )); do
   if (( width > maxwidth )); then maxwidth=$width; fi
 done
 for (( k=0; k < K; k++ )); do
-  if [ -z "$RAW" ]; then
-    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]}"
+  if [ -n "$RAW" ]; then
+    echo "${versions[$k]}":"${venvs[$k]#$PREFIX}"
   else
-    echo "${versions[$k]}":"${venvs[$k]}"
+    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]#$PREFIX}"
   fi
 done | sort
