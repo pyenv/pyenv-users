@@ -46,6 +46,10 @@ for option in "${OPTIONS[@]}"; do
     pyenv help users
     exit 0
     ;;
+  * )
+    echo "pyenv-users: unrecognized option '$option'"
+    exit 1
+    ;;
   esac
 done
 
