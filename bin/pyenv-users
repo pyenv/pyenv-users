@@ -40,7 +40,7 @@ parse_options "$@"
 for option in "${OPTIONS[@]}"; do
   case "$option" in
   "r" | "raw" )
-    RAW=true
+    RAW=1
     ;;
   "h" | "help" )
     pyenv help users
@@ -103,9 +103,9 @@ for (( k=0; k < K; k++ )); do
   if (( width > maxwidth )); then maxwidth=$width; fi
 done
 for (( k=0; k < K; k++ )); do
-  if [ -z "$RAW" ]; then
-    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]}"
-  else
+  if [ -n "$RAW" ]; then
     echo "${versions[$k]}":"${venvs[$k]}"
+  else
+    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]}"
   fi
 done | sort
