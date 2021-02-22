@@ -4,7 +4,8 @@
 #
 # Usage: pyenv users [-r|--raw] [directory]
 #
-#   -r/--raw   Raw output strings as "<version>:<venv-path>"
+#   -A/--absolute-paths  Output absolute paths instead of relative paths
+#   -r/--raw             Raw output strings as "<version>:<venv-path>"
 #
 # Scans [directory] for virtual environments whose `python` commands
 # are symlinks back into a pyenv version. Default: current directory.
@@ -35,10 +36,13 @@ parse_options() {
   done
 }
 
-unset RAW
+unset ABSOLUTE RAW
 parse_options "$@"
 for option in "${OPTIONS[@]}"; do
   case "$option" in
+  "A" | "absolute-paths" )
+    ABSOLUTE=1
+    ;;
   "r" | "raw" )
     RAW=1
     ;;
@@ -61,6 +65,12 @@ else
   echo "pyenv-users: too many directory arguments"
   exit 1
 fi
+if [ -n "$ABSOLUTE" ]; then
+  PREFIX=""
+else
+  PREFIX="$DIR/"
+fi
+
 
 # ----------------------------------------------------------------------------
 # Finished parsing the arguments. Begin the actual functionality.
@@ -104,8 +114,8 @@ for (( k=0; k < K; k++ )); do
 done
 for (( k=0; k < K; k++ )); do
   if [ -n "$RAW" ]; then
-    echo "${versions[$k]}":"${venvs[$k]}"
+    echo "${versions[$k]}":"${venvs[$k]#$PREFIX}"
   else
-    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]}"
+    printf "%-*s  %s\n" "$maxwidth" "${versions[$k]}" "${venvs[k]#$PREFIX}"
   fi
 done | sort
