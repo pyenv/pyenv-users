@@ -54,8 +54,7 @@ if [[ "${#ARGUMENTS[@]}" == 0 ]]; then
 elif [[ "${#ARGUMENTS[@]}" == 1 ]]; then
   DIR="${ARGUMENTS[0]}"
 else
-  echo -e "\nToo many directory arguments.\n"
-  pyenv help users
+  echo "pyenv-users: too many directory arguments"
   exit 1
 fi
 
