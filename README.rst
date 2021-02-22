@@ -68,17 +68,16 @@ specified directory:
 
 .. code-block:: bash
 
-   $ pyenv versions
-   * system (set by /home/peter/.local/pyenv/version)
-     3.6.10
-     3.7.5
-     3.7.9
-     3.8.6
-     3.9.1
-     pypy3.6-7.3.0
-     pypy3.6-7.3.1
+   $ pyenv versions --bare
+   3.6.10
+   3.7.5
+   3.7.9
+   3.8.6
+   3.9.1
+   pypy3.6-7.3.0
+   pypy3.6-7.3.1
 
-   $ comm -3 <(pyenv users --raw ~ | cut -d: -f1 | uniq) <(pyenv versions | tail -n+2 | tr -d "[:blank:]") | tr -d "[:blank:]"
+   $ comm -3 <(pyenv users --raw ~ | cut -d: -f1 | uniq) <(pyenv versions --bare) | tr -d "[:blank:]"
    3.6.10
    3.7.5
    3.9.1
