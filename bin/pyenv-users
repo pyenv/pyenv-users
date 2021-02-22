@@ -76,14 +76,12 @@ fi
 
 # Collect all symlinks named `python` that point into $PYENV_ROOT
 cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
-unset i
 while IFS= read -r -d $'\0' file; do
-  links[i++]="$file"
+  links+=("$file")
 done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
 
 # Turn each link into a (version, venv) string pair
 regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
-unset i
 for link in "${links[@]}"; do
   linkpath=$(realpath -s "$link")
   target=$(readlink -f "$link")
@@ -93,8 +91,8 @@ for link in "${links[@]}"; do
   if grep -v -q "$PYENV_ROOT" <<< "$linkpath" || \
      grep -q "$PYENV_ROOT/versions/$version/envs" <<< "$linkpath"
   then
-    versions[i]="$version"
-    venvs[i++]="${link%/bin/python}"
+    versions+=("$version")
+    venvs+=("${link%/bin/python}")
   fi
 done
 
