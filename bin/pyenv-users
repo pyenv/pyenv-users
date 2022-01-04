@@ -2,7 +2,7 @@
 #
 # Summary: Find virtual environments that use pyenv-managed versions.
 #
-# Usage: pyenv users [-r|--raw] [directory]
+# Usage: pyenv users [-A|--absolute-paths] [-r|--raw] [directory]
 #
 #   -A/--absolute-paths  Output absolute paths instead of relative paths
 #   -r/--raw             Raw output strings as "<version>:<venv-path>"
