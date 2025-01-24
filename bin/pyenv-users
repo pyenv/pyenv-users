@@ -79,22 +79,41 @@ fi
 # and `venvs` are venv pathnames. Using parallel arrays since arrays-of-arrays
 # are a pain in bash. Keeping versions and venvs separate avoids needing awk.
 declare -a links versions venvs
+declare readlink realpath find
+
+if [ -n "$(type -p greadlink)" ]; then
+  readlink="$(type -p greadlink)"
+else
+  readlink="readlink"
+fi
+
+if [ -n "$(type -p grealpath)" ]; then
+  realpath="$(type -p grealpath)"
+else
+  realpath="realpath"
+fi
+
+if [ -n "$(type -p gfind)" ]; then
+  find="$(type -p gfind)"
+else
+  find="find"
+fi
 
 if [ -z "$PYENV_ROOT" ]; then
   PYENV_ROOT=$(pyenv root)
 fi
 
 # Collect all symlinks named `python` that point into $PYENV_ROOT
-cmd="readlink -f '{}' | grep -q ${PYENV_ROOT}"
+cmd="${readlink} -f '{}' | grep -q ${PYENV_ROOT}"
 while IFS= read -r -d $'\0' file; do
   links+=("$file")
-done < <(find -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
+done < <(${find} -H "$DIR" -name "python" -type l -exec sh -c "$cmd" \; -print0)
 
 # Turn each link into a (version, venv) string pair
 regex="${PYENV_ROOT}/versions/(.+)/bin/(.+)"
 for link in "${links[@]}"; do
-  linkpath=$(realpath -s "$link")
-  target=$(readlink -f "$link")
+  linkpath=$(${realpath} -s "$link")
+  target=$(${readlink} -f "$link")
   [[ "$target" =~ $regex ]]
   version="${BASH_REMATCH[1]}"
   # Only capture links outside PYENV_ROOT or inside pyenv-virtualenv venvs
